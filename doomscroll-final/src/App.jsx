@@ -378,9 +378,40 @@ function DoomScrollApp() {
   }
 
   if (screen === 7) {
+    const [email, setEmail] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+
+    const handleEmailSubmit = async (e) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+
+      try {
+        await fetch('https://script.google.com/macros/s/AKfycbwW9opx0iIfhj28o8mXGkGmv5-Rirgt52r6Ful851HRcfsOH34WcXaoCqVlc_NrNs5v/exec', {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            age: data.age,
+            hoursPerDay: stats.hours,
+            yearsWasted: stats.years,
+            reason: data.reason
+          })
+        });
+        setSubmitted(true);
+      } catch (error) {
+        console.error('Error:', error);
+        setSubmitted(true); // Still show success since no-cors doesn't return response
+      }
+      setIsSubmitting(false);
+    };
+
     return (
-      <div className="w-full h-screen bg-gradient-to-b from-black via-red-950/20 to-black flex items-center justify-center p-6">
-        <div className="max-w-md w-full">
+      <div className="w-full h-screen bg-gradient-to-b from-black via-red-950/20 to-black flex items-center justify-center p-6 overflow-y-auto">
+        <div className="max-w-md w-full py-8">
           <div className="text-center mb-8">
             <div className="text-7xl mb-4">💀</div>
             <h2 className="text-3xl font-black text-white mb-2">
@@ -412,6 +443,40 @@ function DoomScrollApp() {
             </div>
           </div>
 
+          {!submitted ? (
+            <form onSubmit={handleEmailSubmit} className="mb-6">
+              <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-6">
+                <h3 className="text-white font-semibold mb-2">Want to fix this?</h3>
+                <p className="text-gray-400 text-sm mb-4">
+                  We're building features to help you actually reduce your screen time. Join the waitlist.
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                    className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    {isSubmitting ? 'Joining...' : 'Join'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          ) : (
+            <div className="bg-green-900/20 border border-green-500/30 rounded-xl p-6 mb-6">
+              <p className="text-green-400 font-semibold text-center">
+                ✓ You're on the list! We'll email you when new features drop.
+              </p>
+            </div>
+          )}
+
           <button
             onClick={() => {
               setScreen(8);
@@ -419,7 +484,7 @@ function DoomScrollApp() {
             }}
             className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold py-4 rounded-xl transition-all"
           >
-            Help Me Fix This
+            {submitted ? 'Continue to Dashboard' : 'Skip for Now'}
           </button>
         </div>
       </div>
